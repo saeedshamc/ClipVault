@@ -1,0 +1,15 @@
+[package]
+name = "clipvault-platform-linux"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Linux X11/Wayland clipboard watcher and autostart backends for ClipVault"
+authors.workspace = true
+
+[dependencies]
+clipvault-platform = { workspace = true }
+thiserror = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# X11/Wayland bindings arrive with the Linux watcher milestones.

@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/platform",
+    "crates/platform/windows",
+    "crates/platform/linux",
+    "crates/daemon",
+    "crates/ui",
+]
+default-members = [
+    "crates/core",
+    "crates/platform",
+    "crates/daemon",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/saeedshamc/ClipVault"
+homepage = "https://github.com/saeedshamc/ClipVault"
+description = "Fast, private, always-on clipboard history for Windows and Linux"
+authors = ["Saeed Shamsi"]
+readme = "README.md"
+
+[workspace.dependencies]
+clipvault-core = { path = "crates/core" }
+clipvault-platform = { path = "crates/platform" }
+clipvault-platform-windows = { path = "crates/platform/windows" }
+clipvault-platform-linux = { path = "crates/platform/linux" }
+thiserror = "2"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

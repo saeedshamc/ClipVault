@@ -1,0 +1,15 @@
+[package]
+name = "clipvault-platform-windows"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Windows clipboard watcher and autostart backends for ClipVault"
+authors.workspace = true
+
+[dependencies]
+clipvault-platform = { workspace = true }
+thiserror = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+# Win32 bindings arrive with the Windows watcher milestone.

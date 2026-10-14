@@ -1,0 +1,12 @@
+[package]
+name = "clipvault-platform"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Platform traits for clipboard watching, autostart, and source-app detection"
+authors.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+clipvault-core = { workspace = true }

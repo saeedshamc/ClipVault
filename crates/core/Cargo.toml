@@ -1,0 +1,12 @@
+[package]
+name = "clipvault-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Platform-independent model, storage, config, and IPC protocol for ClipVault"
+authors.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+serde = { workspace = true }

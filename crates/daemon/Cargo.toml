@@ -1,0 +1,24 @@
+[package]
+name = "clipvault-daemon"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Headless ClipVault daemon: clipboard watcher, storage, and IPC server"
+authors.workspace = true
+
+[[bin]]
+name = "clipvault-daemon"
+path = "src/main.rs"
+
+[dependencies]
+clipvault-core = { workspace = true }
+clipvault-platform = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+clipvault-platform-windows = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+clipvault-platform-linux = { workspace = true }

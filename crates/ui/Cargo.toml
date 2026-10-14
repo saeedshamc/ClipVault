@@ -1,0 +1,16 @@
+[package]
+name = "clipvault-ui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "On-demand ClipVault history UI (Tauri app in a later milestone)"
+authors.workspace = true
+
+[[bin]]
+name = "clipvault-ui"
+path = "src/main.rs"
+
+[dependencies]
+clipvault-core = { workspace = true }
+anyhow = { workspace = true }
