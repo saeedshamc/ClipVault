@@ -9,8 +9,32 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
+use crate::config::Config;
 use crate::error::{CoreError, CoreResult};
+use crate::hash::content_hash;
 use crate::model::{ClipboardItem, FormatPayload, ItemKind, NewClipboardItem};
+use crate::retention::{evaluate_pressure, exceeds_item_limit, RetentionSnapshot};
+
+/// Result of attempting to persist a clipboard capture with dedupe + limits.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CaptureOutcome {
+    /// A new row was inserted.
+    Inserted { id: i64 },
+    /// An identical hash already existed; `last_used_at` was refreshed.
+    Deduped { id: i64 },
+    /// Item exceeded `limits.max_item_bytes` and was not stored.
+    SkippedOversized {
+        size: u64,
+        limit: u64,
+        hash_prefix: String,
+    },
+}
+
+/// Summary of a retention pass.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct RetentionReport {
+    pub deleted: u64,
+}
 
 /// Open a database at `path`, enable WAL, and run migrations.
 pub struct Store {
@@ -55,6 +79,8 @@ impl Store {
     }
 
     /// Insert a new item and its formats. Returns the new row id.
+    ///
+    /// Prefer [`Store::capture`] for daemon paths so size limits and dedupe apply.
     pub fn insert(&self, new_item: &NewClipboardItem) -> CoreResult<i64> {
         new_item.validate().map_err(CoreError::InvalidInput)?;
 
@@ -84,6 +110,111 @@ impl Store {
         insert_formats(&tx, item_id, &new_item.formats)?;
         tx.commit()?;
         Ok(item_id)
+    }
+
+    /// Capture an item with blake3 hashing, per-item size limits, and dedupe.
+    ///
+    /// Duplicate content only updates `last_used_at` (moves the item to the top
+    /// of history listings). Oversized items are skipped and logged; they never
+    /// panic the caller.
+    pub fn capture(
+        &self,
+        mut new_item: NewClipboardItem,
+        config: &Config,
+    ) -> CoreResult<CaptureOutcome> {
+        if new_item.content_hash.is_empty() {
+            new_item.content_hash = content_hash(&new_item.formats);
+        }
+        new_item.validate().map_err(CoreError::InvalidInput)?;
+
+        let total_size = new_item.total_size();
+        if exceeds_item_limit(config, total_size) {
+            let hash_prefix = new_item.content_hash.chars().take(12).collect::<String>();
+            tracing::warn!(
+                kind = new_item.kind.as_str(),
+                size = total_size,
+                limit = config.limits.max_item_bytes,
+                hash_prefix = %hash_prefix,
+                "skipping oversized clipboard item"
+            );
+            return Ok(CaptureOutcome::SkippedOversized {
+                size: total_size,
+                limit: config.limits.max_item_bytes,
+                hash_prefix,
+            });
+        }
+
+        if let Some(existing) = self.get_by_hash(&new_item.content_hash)? {
+            let id = existing.id.expect("id present");
+            self.touch(id, Utc::now())?;
+            tracing::debug!(
+                id,
+                kind = new_item.kind.as_str(),
+                size = total_size,
+                hash_prefix = %new_item.content_hash.chars().take(12).collect::<String>(),
+                "deduped clipboard item"
+            );
+            return Ok(CaptureOutcome::Deduped { id });
+        }
+
+        let id = self.insert(&new_item)?;
+        Ok(CaptureOutcome::Inserted { id })
+    }
+
+    /// Delete unpinned items that violate age / count / total-size retention.
+    ///
+    /// Pinned items are never removed. Safe to call at startup and periodically.
+    pub fn apply_retention(&self, config: &Config) -> CoreResult<RetentionReport> {
+        let mut deleted = 0_u64;
+
+        if config.retention.max_age_days > 0 {
+            let cutoff = Utc::now() - chrono::Duration::days(config.retention.max_age_days as i64);
+            let changed = self.conn.execute(
+                "DELETE FROM items WHERE pinned = 0 AND last_used_at < ?1",
+                params![cutoff.to_rfc3339()],
+            )?;
+            deleted += changed as u64;
+        }
+
+        loop {
+            let snapshot = RetentionSnapshot {
+                item_count: self.count()?,
+                total_bytes: self.total_size()?,
+            };
+            let pressure = evaluate_pressure(config, snapshot);
+            if !pressure.any() {
+                break;
+            }
+
+            let victim: Option<i64> = self
+                .conn
+                .query_row(
+                    "SELECT id FROM items WHERE pinned = 0
+                     ORDER BY last_used_at ASC, id ASC LIMIT 1",
+                    [],
+                    |row| row.get(0),
+                )
+                .optional()?;
+
+            let Some(id) = victim else {
+                // Only pinned items remain; stop even if still over limits.
+                tracing::warn!(
+                    item_count = snapshot.item_count,
+                    total_bytes = snapshot.total_bytes,
+                    "retention limits exceeded but only pinned items remain"
+                );
+                break;
+            };
+
+            self.delete(id)?;
+            deleted += 1;
+        }
+
+        if deleted > 0 {
+            tracing::info!(deleted, "retention pass complete");
+        }
+
+        Ok(RetentionReport { deleted })
     }
 
     /// Fetch a single item with all formats.
@@ -451,5 +582,101 @@ mod tests {
         let items = store.list(10, 0).expect("list");
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].searchable_text, "durable");
+    }
+
+    fn sample_capture(text: &str) -> NewClipboardItem {
+        NewClipboardItem {
+            content_hash: String::new(),
+            kind: ItemKind::Text,
+            pinned: false,
+            source_app: None,
+            searchable_text: text.into(),
+            formats: vec![FormatPayload::text_plain(text)],
+        }
+    }
+
+    #[test]
+    fn capture_dedupes_and_touches() {
+        let store = Store::open_in_memory().expect("open");
+        let config = Config::default();
+        let first = store
+            .capture(sample_capture("same"), &config)
+            .expect("capture");
+        let CaptureOutcome::Inserted { id } = first else {
+            panic!("expected insert");
+        };
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        let second = store
+            .capture(sample_capture("same"), &config)
+            .expect("capture");
+        assert_eq!(second, CaptureOutcome::Deduped { id });
+        assert_eq!(store.count().expect("count"), 1);
+        let item = store.get(id).expect("get");
+        assert!(item.last_used_at > item.created_at);
+    }
+
+    #[test]
+    fn capture_skips_oversized() {
+        let store = Store::open_in_memory().expect("open");
+        let mut config = Config::default();
+        config.limits.max_item_bytes = 4;
+        let outcome = store
+            .capture(sample_capture("too-big"), &config)
+            .expect("capture");
+        assert!(matches!(
+            outcome,
+            CaptureOutcome::SkippedOversized {
+                size: 7,
+                limit: 4,
+                ..
+            }
+        ));
+        assert_eq!(store.count().expect("count"), 0);
+    }
+
+    #[test]
+    fn retention_respects_max_items_and_pins() {
+        let store = Store::open_in_memory().expect("open");
+        let mut config = Config::default();
+        config.limits.max_items = 2;
+        config.retention.max_age_days = 0;
+
+        let a = store.capture(sample_capture("a"), &config).expect("a");
+        let b = store.capture(sample_capture("b"), &config).expect("b");
+        let c = store.capture(sample_capture("c"), &config).expect("c");
+        let CaptureOutcome::Inserted { id: id_a } = a else {
+            panic!("a");
+        };
+        let CaptureOutcome::Inserted { id: id_b } = b else {
+            panic!("b");
+        };
+        let CaptureOutcome::Inserted { id: id_c } = c else {
+            panic!("c");
+        };
+        store.set_pinned(id_a, true).expect("pin a");
+
+        let report = store.apply_retention(&config).expect("retain");
+        assert_eq!(report.deleted, 1);
+        assert_eq!(store.count().expect("count"), 2);
+        assert!(store.get(id_a).is_ok());
+        assert!(store.get(id_c).is_ok());
+        assert!(matches!(store.get(id_b), Err(CoreError::NotFound(_))));
+    }
+
+    #[test]
+    fn retention_deletes_by_age() {
+        let store = Store::open_in_memory().expect("open");
+        let mut config = Config::default();
+        config.retention.max_age_days = 1;
+
+        let id = store
+            .insert(&sample_text("old", "ancient"))
+            .expect("insert");
+        let old = Utc::now() - chrono::Duration::days(3);
+        store.touch(id, old).expect("backdate");
+
+        let report = store.apply_retention(&config).expect("retain");
+        assert_eq!(report.deleted, 1);
+        assert_eq!(store.count().expect("count"), 0);
     }
 }

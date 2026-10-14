@@ -2,13 +2,17 @@
 
 pub mod config;
 pub mod error;
+pub mod hash;
 pub mod model;
+pub mod retention;
 pub mod storage;
 
 pub use config::{AppPaths, Config, LimitsConfig, RetentionConfig, StorageConfig, WatcherConfig};
 pub use error::{CoreError, CoreResult};
+pub use hash::{content_hash, hash_bytes};
 pub use model::{ClipboardItem, FormatPayload, ItemKind, NewClipboardItem};
-pub use storage::{Store, SCHEMA_VERSION};
+pub use retention::{evaluate_pressure, exceeds_item_limit, RetentionPressure, RetentionSnapshot};
+pub use storage::{CaptureOutcome, RetentionReport, Store, SCHEMA_VERSION};
 
 /// Crate version inherited from the workspace package version.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
