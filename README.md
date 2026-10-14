@@ -6,8 +6,8 @@ ClipVault runs a tiny background daemon that captures clipboard changes (text,
 HTML, images, file lists), stores them locally with full-text search, and opens
 an on-demand history window via a global hotkey or tray icon.
 
-> **Current release: v0.2.0** — core model, TOML config, and SQLite + FTS5
-> storage. Clipboard capture and UI arrive in later milestones — see
+> **Current release: v0.3.0** — storage with blake3 dedupe, size limits, and
+> retention. OS clipboard watching arrives in later milestones — see
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Goals

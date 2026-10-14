@@ -15,12 +15,12 @@ annotated tag. Items marked **stub** exist only as compile-time placeholders.
 - Clipboard item model, TOML config, SQLite (WAL) with forward-only migrations
 - FTS5 search, CRUD API, unit tests
 
-## Planned
-
 ### v0.3.0 — Dedupe + retention
 
 - blake3 content hashing, pin-aware retention by count/age/total size
 - Configurable size limits with skip-and-log for oversized items
+
+## Planned
 
 ### v0.4.0 — Windows watcher + daemon MVP
 
