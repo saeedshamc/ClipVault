@@ -1,0 +1,73 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.code-workspace
+
+# OS
+Desktop.ini
+ehthumbs.db
+
+# Logs and local state
+*.log
+logs/
+.clipvault/
+
+# Databases and blobs (runtime data)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/blobs/
+**/data/
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Build / packaging artifacts
+/dist/
+/build/
+*.exe
+*.msi
+*.msix
+*.appx
+*.deb
+*.rpm
+*.AppImage
+*.dmg
+*.AppDir/
+/packaging/**/out/
+
+# Tauri / Node frontend
+node_modules/
+.svelte-kit/
+frontend/dist/
+crates/ui/dist/
+crates/ui/frontend/dist/
+*.local
+
+# Test / coverage / fuzz
+/coverage/
+*.profraw
+*.profdata
+/fuzz/artifacts/
+/fuzz/corpus/
+
+# Temporary
+*.tmp
+*.temp
+.cache/
