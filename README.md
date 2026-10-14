@@ -6,9 +6,9 @@ ClipVault runs a tiny background daemon that captures clipboard changes (text,
 HTML, images, file lists), stores them locally with full-text search, and opens
 an on-demand history window via a global hotkey or tray icon.
 
-> **Status:** early development. Milestone **v0.1.0** establishes the repository,
-> workspace, CI, and crate layout. Capture, storage, and UI arrive in later
-> milestones — see [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Current release: v0.1.0** — repository foundation only (workspace, CI, crate
+> stubs). Capture, storage, and UI arrive in later milestones — see
+> [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Goals
 
