@@ -10,12 +10,12 @@ annotated tag. Items marked **stub** exist only as compile-time placeholders.
 - Git hooks rejecting attribution trailers in commit messages
 - Workspace layout, toolchain pin, dual license, CI, README
 
-## Planned
-
 ### v0.2.0 — Core model + storage
 
 - Clipboard item model, TOML config, SQLite (WAL) with forward-only migrations
 - FTS5 search, CRUD API, unit tests
+
+## Planned
 
 ### v0.3.0 — Dedupe + retention
 

@@ -79,7 +79,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "directories",
@@ -93,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-daemon"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clipvault-core",
@@ -105,7 +105,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-platform"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clipvault-core",
  "thiserror",
@@ -113,7 +113,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-platform-linux"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clipvault-platform",
  "thiserror",
@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-platform-windows"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clipvault-platform",
  "thiserror",
@@ -129,7 +129,7 @@ dependencies = [
 
 [[package]]
 name = "clipvault-ui"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clipvault-core",
