@@ -16,9 +16,16 @@ clipvault-core = { workspace = true }
 clipvault-platform = { workspace = true }
 anyhow = { workspace = true }
 tracing = { workspace = true }
+clap = { workspace = true }
+serde_json = { workspace = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+interprocess = "2"
 
 [target.'cfg(windows)'.dependencies]
 clipvault-platform-windows = { workspace = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 clipvault-platform-linux = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

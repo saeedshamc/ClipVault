@@ -20,7 +20,29 @@ milestone lands the related feature.
 - [ ] (Optional) Open the resolved DB path after a future daemon run and confirm
       `schema_migrations.version = 1`
 
+## v0.4.0 — Windows watcher + daemon IPC
+
+Run from a desktop session (not Session 0 / pure headless without user profile):
+
+1. `cargo run -p clipvault-daemon -- run`
+2. In another terminal:
+   - `cargo run -p clipvault-daemon -- ping`
+   - Copy some text in Notepad
+   - `cargo run -p clipvault-daemon -- list`
+   - `cargo run -p clipvault-daemon -- search <word>`
+   - `cargo run -p clipvault-daemon -- pause` then copy again (must not appear)
+   - `cargo run -p clipvault-daemon -- resume`
+   - `cargo run -p clipvault-daemon -- clear`
+3. Confirm logs never print clipboard contents (only kind/size/hash prefix)
+
+### Known gaps in v0.4.0
+
+- Linux watcher is still a stub (no X11 capture yet)
+- Only `CF_UNICODETEXT` is captured (HTML/images later)
+- No single-instance lock / supervised restart yet (v0.5.0)
+- Named pipe ACL is default (current-user restriction hardening later)
+
 ## Later milestones
 
-Checklists for Windows watcher, Linux X11/Wayland, autostart, privacy filters,
-and packaging will be appended when those features are implemented.
+Checklists for Linux X11/Wayland, autostart, privacy filters, and packaging will
+be appended when those features are implemented.
