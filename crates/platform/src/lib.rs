@@ -3,7 +3,13 @@
 //! OS-specific implementations live in `clipvault-platform-windows` and
 //! `clipvault-platform-linux`. This crate only defines the contracts.
 
+pub mod event;
+
+use std::sync::mpsc::Sender;
+
 use thiserror::Error;
+
+pub use event::ClipboardEvent;
 
 /// Errors produced by platform backends.
 #[derive(Debug, Error)]
@@ -18,8 +24,10 @@ pub enum PlatformError {
 
 /// Watches the system clipboard for changes without polling as the primary mechanism.
 pub trait ClipboardWatcher {
-    /// Start watching. Implementations must prefer OS notifications over polling.
-    fn start(&mut self) -> Result<(), PlatformError>;
+    /// Start watching and send captured events on `tx`.
+    ///
+    /// Implementations must prefer OS notifications over polling.
+    fn start(&mut self, tx: Sender<ClipboardEvent>) -> Result<(), PlatformError>;
 
     /// Stop watching and release OS resources.
     fn stop(&mut self) -> Result<(), PlatformError>;
@@ -46,11 +54,12 @@ pub trait SourceApp {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::mpsc;
 
     struct NoopWatcher;
 
     impl ClipboardWatcher for NoopWatcher {
-        fn start(&mut self) -> Result<(), PlatformError> {
+        fn start(&mut self, _tx: Sender<ClipboardEvent>) -> Result<(), PlatformError> {
             Ok(())
         }
 
@@ -62,7 +71,8 @@ mod tests {
     #[test]
     fn noop_watcher_starts_and_stops() {
         let mut w = NoopWatcher;
-        assert!(w.start().is_ok());
+        let (tx, _rx) = mpsc::channel();
+        assert!(w.start(tx).is_ok());
         assert!(w.stop().is_ok());
     }
 }

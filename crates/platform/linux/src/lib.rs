@@ -4,7 +4,9 @@
 //! units are implemented in later milestones. This crate currently exposes stubs
 //! so the workspace builds on every host.
 
-use clipvault_platform::{Autostart, ClipboardWatcher, PlatformError};
+use std::sync::mpsc::Sender;
+
+use clipvault_platform::{Autostart, ClipboardEvent, ClipboardWatcher, PlatformError};
 
 /// Placeholder Linux clipboard watcher.
 #[derive(Debug, Default)]
@@ -13,7 +15,7 @@ pub struct LinuxClipboardWatcher {
 }
 
 impl ClipboardWatcher for LinuxClipboardWatcher {
-    fn start(&mut self) -> Result<(), PlatformError> {
+    fn start(&mut self, _tx: Sender<ClipboardEvent>) -> Result<(), PlatformError> {
         if cfg!(target_os = "linux") {
             self.running = true;
             Ok(())
@@ -80,12 +82,13 @@ impl Autostart for LinuxAutostart {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use clipvault_platform::ClipboardWatcher;
+    use std::sync::mpsc;
 
     #[test]
     fn watcher_start_respects_target_os() {
         let mut watcher = LinuxClipboardWatcher::default();
-        let result = watcher.start();
+        let (tx, _rx) = mpsc::channel();
+        let result = watcher.start(tx);
         if cfg!(target_os = "linux") {
             assert!(result.is_ok());
             assert!(watcher.is_running());
