@@ -1,7 +1,12 @@
 //! Platform-independent ClipVault core: models, storage, config, and IPC protocol.
-//!
-//! Concrete storage and IPC land in later milestones; this crate starts as the
-//! shared foundation that every other crate depends on.
+
+pub mod config;
+pub mod error;
+pub mod model;
+
+pub use config::{AppPaths, Config, LimitsConfig, RetentionConfig, StorageConfig, WatcherConfig};
+pub use error::{CoreError, CoreResult};
+pub use model::{ClipboardItem, FormatPayload, ItemKind, NewClipboardItem};
 
 /// Crate version inherited from the workspace package version.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

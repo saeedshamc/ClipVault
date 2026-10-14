@@ -17,7 +17,7 @@ default-members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.83"
+rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/saeedshamc/ClipVault"
 homepage = "https://github.com/saeedshamc/ClipVault"
@@ -34,6 +34,11 @@ thiserror = "2"
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
+toml = "0.8"
+directories = "6"
+rusqlite = { version = "0.32", features = ["bundled"] }
+chrono = { version = "0.4", features = ["serde"] }
+tempfile = "3"
 
 [profile.release]
 lto = true
