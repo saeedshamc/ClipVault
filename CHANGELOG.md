@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-15
+
+### Added
+
+- Versioned length-prefixed JSON IPC protocol (`PROTOCOL_VERSION = 1`)
+- Windows text clipboard watcher via message-only window +
+  `AddClipboardFormatListener` (sequence-number dedupe, OpenClipboard retries)
+- Daemon runtime: config load, SQLite store, watcher ingest, retention on capture
+- Local IPC server (named pipe on Windows, Unix socket on Linux) via `interprocess`
+- CLI: `run`, `ping`, `list`, `search`, `delete`, `clear`, `pause`, `resume`,
+  `status`
+- Manual test checklist for Windows desktop verification
+
+### Known limitations
+
+- Linux watcher remains a stub (X11 lands in v0.6.0)
+- Text-only capture (`CF_UNICODETEXT`); rich formats in v0.7.0
+- No single-instance lock or supervised restart yet (v0.5.0)
+
 ## [0.3.0] - 2026-10-15
 
 ### Added
@@ -39,14 +58,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Repository foundation: commit-message hooks, `.gitignore`, pinned Rust toolchain
-- Cargo workspace with `clipvault-core`, `clipvault-platform`,
-  `clipvault-platform-windows`, `clipvault-platform-linux`, `clipvault-daemon`,
-  and `clipvault-ui` stubs
+- Cargo workspace with crate stubs
 - Dual licensing (MIT OR Apache-2.0)
-- GitHub Actions CI (fmt, clippy, test) on `windows-latest` and `ubuntu-latest`
+- GitHub Actions CI on `windows-latest` and `ubuntu-latest`
 - README skeleton and milestone roadmap
 
-[Unreleased]: https://github.com/saeedshamc/ClipVault/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/saeedshamc/ClipVault/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/saeedshamc/ClipVault/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/saeedshamc/ClipVault/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/saeedshamc/ClipVault/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/saeedshamc/ClipVault/releases/tag/v0.1.0

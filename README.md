@@ -6,8 +6,8 @@ ClipVault runs a tiny background daemon that captures clipboard changes (text,
 HTML, images, file lists), stores them locally with full-text search, and opens
 an on-demand history window via a global hotkey or tray icon.
 
-> **Current release: v0.3.0** — storage with blake3 dedupe, size limits, and
-> retention. OS clipboard watching arrives in later milestones — see
+> **Current release: v0.4.0** — Windows text watcher, daemon IPC, and CLI.
+> Linux capture, rich formats, and UI arrive later — see
 > [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Goals
@@ -52,7 +52,16 @@ Requirements: [Rust](https://rustup.rs/) (see `rust-toolchain.toml`).
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo run -p clipvault-daemon
+
+# Daemon (Windows: captures CF_UNICODETEXT)
+cargo run -p clipvault-daemon -- run
+
+# CLI against a running daemon
+cargo run -p clipvault-daemon -- ping
+cargo run -p clipvault-daemon -- list
+cargo run -p clipvault-daemon -- search hello
+cargo run -p clipvault-daemon -- pause
+cargo run -p clipvault-daemon -- resume
 ```
 
 ## Platform support (honest)

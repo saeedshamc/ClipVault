@@ -20,12 +20,12 @@ annotated tag. Items marked **stub** exist only as compile-time placeholders.
 - blake3 content hashing, pin-aware retention by count/age/total size
 - Configurable size limits with skip-and-log for oversized items
 
-## Planned
-
 ### v0.4.0 — Windows watcher + daemon MVP
 
 - Message-only window + `AddClipboardFormatListener` (text)
 - Daemon IPC + CLI: `list`, `search`, `delete`, `clear`, `pause`, `resume`
+
+## Planned
 
 ### v0.5.0 — Reliability (Windows)
 
@@ -67,7 +67,7 @@ annotated tag. Items marked **stub** exist only as compile-time placeholders.
 
 | Location | Stub | Target milestone |
 |----------|------|------------------|
-| `clipvault-platform-windows` watcher/autostart | Returns unavailable/not-implemented | v0.4.0 / v0.5.0 |
+| `clipvault-platform-windows` autostart | Not implemented | v0.5.0 |
 | `clipvault-platform-linux` watcher/autostart | Returns unavailable/not-implemented | v0.6.0 |
 | `clipvault-ui` | Version-only binary (no Tauri yet) | v0.9.0 |
-| `clipvault-daemon` | Prints version only | v0.4.0 |
+| Rich clipboard formats / paste-back | Text only today | v0.7.0 |
